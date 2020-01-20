@@ -1,0 +1,16 @@
+django
+channels
+numpy
+pillow
+asgi_redis
+channels_redis
+opencv-python
+h5py
+scikit-image
+scipy
+programy
+django-extensions
+pydub
+whitenoise
+pyOpenSSL
+pyjwt

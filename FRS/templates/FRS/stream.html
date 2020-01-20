@@ -1,0 +1,191 @@
+{% extends "./layout.html" %}
+{% load static %}
+{% block addition_links %}
+
+<style>
+    #streamcont{
+        width:900px;
+        height:700px;
+        top:260px;
+        position:absolute;
+
+    }
+    #table{
+        width:450px;
+        margin-left:1380px;
+        margin-top:10px;
+        max-width: 450px;
+    }
+    #video {
+        width: 900px;
+        height: 675px;
+        position: inherit;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    #video2 {
+        width: 480px;
+        height: 360px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-top: 20px;
+        margin-bottom: 20px;
+    }
+    #canvas {
+        width: 900px;
+        height: 675px;
+        position: absolute;
+        right: 0;
+        left: 0;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    #canvas2 {
+        max-width: 480px;
+        max-height: 360px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 20px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    #header {
+        width:100%;
+        height:180px;
+        padding:50px;
+    }
+
+    #main {
+        width: 100%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+
+    }
+
+</style>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Content-Security-Policy" content="default-src * gap: data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;">
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<div id="main" style="height:950px;">
+        <div id="header">
+            <a href="http://dvfu.ru/" target="_blank" style="position:absolute; top:15px; right:85%;"><img alt="Логотип школы цифровой экономики" style="height:135px; width:220px; " src="{% static '/FRS/img/fefuds.png' %}" /></a>
+            <a class="h" style="color: #0067b1; font-size:70px; font-family: 'Amarante', Tahoma, sans-serif;">СИСТЕМА РАСПОЗНАВАНИЯ ЛИЦ</a>
+            <a href="http://fefudigitalschool.com/" target="_blank" style="position:absolute; top:15px; left:85%;"><img alt="Логотип школы цифровой экономики" style="height:135px; width:237px; " src="{% static '/FRS/img/shc.png' %}" /></a>
+        </div>
+        <div class="buttons">
+            <a class="btn btn-test" id="btn_head" href="/faces">ПЕРЕЙТИ К БАЗЕ ЛИЦ</a>
+
+        </div>
+
+{#    <div id="coinModal1" class="modal fade" tabindex="-1" style="padding-top: 50px;" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">#}
+{#    `    <div class="modal-dialog modal-lg" role="document">#}
+{#            <div class="modal-content" id="coinModal2">#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="chevron-wrapper">#}
+{#            <span></span>#}
+{#            <span></span>#}
+{#            <span></span>#}
+{#        </div>#}
+{#    </div>#}
+    <table  id="table" rowcount="{{ row_count }}">
+        <thead>
+                <tr class="backtitle">
+                    <th style="padding-left:15px; padding-right:15px; "><input type="checkbox" class="checkall" onchange="checkAll(this)"></th>
+                    <th style="padding-left:15px; padding-right:15px;"><span class="dbtitle">Имя посетителя <img alt="поле изменяемо" title="Поле изменяемо" style="height:25px; width:18px; margin-left:5px; " src="{% static '/FRS/img/pencil.png' %}" />
+                        <img class="zoom" style="cursor: pointer; height:25px; width:25px; margin-left:10px;" onclick="show()" alt="Обновить блок" title="Обновить блок" src="{% static '/FRS/img/upd.png' %}"/> </span></th>
+
+                    <th style="padding-left:15px; padding-right:15px;"><span class="dbtitle">Фото</span></th>
+                </tr>
+        </thead>
+        {% csrf_token %}
+        {% for r in data %}
+        <div id="fives">
+            <tr class="trow" style="padding:5px; border-left: 2px solid #0067b1; border-right: 2px solid #0067b1;">
+                <td class="dbrow" style="padding-left:15px; padding-right:15px;"><input type="checkbox" onchange="chekchek2(this, '{{ r.1 }}', '{{ r.0 }}')" id="{{ r.0 }}"/>
+                <td class="dbrow" style="height:80px; padding-left:15px; padding-right:15px;" id="name" data-id="uid-{{ r.0 }}" data-old_value='{{ r.1 }}' contenteditable="true" onfocusout="chekchek('{{ r.1 }}', '{{ r.0 }}')">{{ r.1 }}</td>
+                <td class="dbrow" style="padding-left:15px; padding-right:15px;"><a target="_blank"
+                                  href="{% static '/facephotos/' %}{{ r.0 }}/photo_{{ r.0 }}.png"
+                                  style=""><img src="{% static '/facephotos/' %}{{ r.0 }}/photo_{{ r.0 }}.png" style="width:80px; height:97px;"></a></td>
+            </tr>
+        </div>
+        {% endfor %}
+    </table>
+    <a class="btn" style="margin-left:1380px; margin-top:5px; background-color:#0067b1; width:450px; height:40px; border-radius:0px;" href="#" onclick=savemany()>СОХРАНИТЬ</a>
+    <a class="btn"  style="margin-left:1380px; margin-top:5px;  background-color:#0067b1; width:450px; height:40px; border-radius:0px;" href="#" onclick=deletemany()>УДАЛИТЬ</a>
+    <div class="container" id="streamcont">
+
+        <div class="row">
+            <div class="col-md-12" style="">
+                <video autoplay id="video" data-eng="{{ lang }}"></video>
+                <canvas id="canvas" width="900" height="675"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static '/FRS/js/database functions.js' %}"></script>
+<script src="{% static '/FRS/js/canvas.js' %}"></script>
+<script src="{% static '/FRS/js/websocket.js' %}"></script>
+{#<script>#}
+{#    let oldrowcount;#}
+{#    let newrowcount;#}
+{##}
+{#    function show(){#}
+{#        $("#table").load("/stream #table > *");#}
+{#    }#}
+{##}
+{#    $(document).ready(function(){#}
+{##}
+{#        $.ajax({#}
+{#            url: "/stream",#}
+{#            type: "post",#}
+{#            data:{#}
+{#                flag:"reloadpage"#}
+{#            },#}
+{#            error: function () {#}
+{#                console.log("ошибка");#}
+{#                alert("An error occurred")#}
+{#            },#}
+{#            success: function(response){#}
+{#                alert('asdf')#}
+{#                newrowcount = response.rc;#}
+{#                alert(response.rc);#}
+{#            }#}
+{#        });#}
+{##}
+{#        oldrowcount = $("#table").attr('rowcount');#}
+{#        console.log(oldrowcount);#}
+{#        console.log(newrowcount);#}
+{#        if (oldrowcount > newrowcount) {#}
+{#            alert('asdf');#}
+{#            show();#}
+{#        };#}
+{##}
+{##}
+{##}
+{#    });#}
+{#</script>#}
+<script>
+    {#$.ajax({#}
+    {#    method: 'post',#}
+    {#    url:'/stream',#}
+    {#    data: serialized-data#}
+    {#).done(function(response){#}
+    {#    show()#}
+    {#    console.log(response.data)#}
+    {#);#}
+
+    function show(){
+            $("#table").load("/stream #table > *");
+    }
+</script>
+
+{% endblock %}
+

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html style="min-height: 100%; height: 100%;">
+
+<head>
+    {% load static %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'FRS/img/favicon.ico' %}"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Face recognizer</title>
+    <link rel="stylesheet" href="{% static '/FRS/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static '/FRS/css/recognizerStyle.css' %}">
+    <script src="{% static '/FRS/js/jquery.min.js' %}"></script>
+    {% block addition_links %}{% endblock %}
+</head>
+<div style="display: none;">
+    <nav class="navbar navbar-light navbar-expand-md d-none d-sm-none d-md-flex" id="mainNav" style="background-color: #ffffff;opacity: 0.85; z-index: 10000;">
+        <div class="container">
+            <button data-toggle="collapse" data-target="#navbarResponsive" class="navbar-toggler float-right"
+                    aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fa fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse dont-collapse-md" id="navbarResponsive">
+                <ul class="nav navbar-nav ml-auto">
+                    {% include './nav_elems.html' %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="navbar navbar-light navbar-expand-md d-flex d-sm-flex d-md-none" id="mainNav" style="background-color: #ffffff;opacity: 0.95; z-index: 10000; padding: 0;">
+        <div class="container-fluid" style="background-color: white;">
+            <button data-toggle="collapse" data-target="#navbarResponsive" class="navbar-toggler float-right"
+                    aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"
+                    style="margin-left: 16px;">
+                <i class="fa fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse dont-collapse-md" id="navbarResponsive">
+                <ul class="nav navbar-nav ml-auto" style="padding-left: 16px;">
+                    {% include './nav_elems.html' %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+</div>
+    {% block content %}{% endblock %}
+
+    <footer style="background-color: #0067b1;">
+        <div class="container">
+            <p style="color: white;font-size: 14px;font-weight: bold; margin-top: -7px;"><span id="footer-text">Школа Цифровой Экономики ДВФУ, 2019</span> </p>
+        </div>
+    </footer>
+    <script src="{% static '/FRS/bootstrap/js/bootstrap.min.js' %}"></script>
+</body>
+
+</html>
