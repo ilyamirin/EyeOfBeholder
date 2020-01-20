@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='DialogUser',
+            name='dialoguser',
             fields=[
                 ('uid', models.CharField(max_length=255, primary_key=True, serialize=False)),
                 ('name', models.CharField(max_length=255, null=True)),
