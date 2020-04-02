@@ -3,7 +3,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SERVANT_DIR = os.path.join(os.path.dirname(BASE_DIR), "ServantGrunbeld")
 LINGVO_DIR = os.path.join(BASE_DIR, "workers", "NosferatuZodd")
-
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 SECRET_KEY = 'icllmxuu1j(tf1oybj9alm100im6whyg$_fz2e4xjqt=i-s4dg'
 
 DEBUG = True
@@ -101,7 +101,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'ru-RU'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 

@@ -7,6 +7,7 @@ import copy
 from PIL import Image
 from channels.consumer import SyncConsumer
 from asgiref.sync import async_to_sync
+from asgiref.sync import sync_to_async
 from channels.layers import get_channel_layer
 import cv2
 from FRS.models import DialogUser
@@ -44,6 +45,16 @@ def get_image_data_from_bytes_data(bytes_data):
     image_bytes_data = BytesIO(image_bytes_data)
     img = Image.open(image_bytes_data)
     img_data = np.array(img)
+    # print('IMG')
+    # print()
+    # print()
+    # print()
+    # print(img_data)
+    # print()
+    # print()
+    # print()
+    # print()
+    # print()
     timestamp = float(bytes_data[:13]) / 1000
     return timestamp, img_data
 
@@ -165,11 +176,19 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
             start_recog = time.time()
             faces, boxes, landmarks = self.recognizer.detectFaces(img_data)
             current_user_uid, photo_slice, photo_slice_b64 = [None]*3
+            c = 0
+            for i in range(len(boxes)):
+                if boxes[c][3] - boxes[c][1] < 120 and boxes[c][2] - boxes[c][0] < 240:
+                   boxes = np.delete(boxes, c, 0)
+                   if len(boxes) == 0:
+                       break
+                else:
+                   c += 1
             if len(boxes) > 0:
-                # y1 x1 y2 x2
                 faces, boxes = sorted_faces(faces, boxes, 10)
                 embeddings = self.recognizer._getEmbedding(faces)
                 y1, x1, y2, x2 = boxes[0]
+                boxB = np.array(boxes[0])
                 w, h, div, (maxy, maxx, *_) = x2 - x1, y2 - y1, 5, img_data.shape
                 photo_slice = img_data[
                     max(y1 - h // div, 0):min(y2 + h // div, maxy - 1),
@@ -177,33 +196,228 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                 ]
                 users = []
                 for i, embed in enumerate(embeddings):
-                    result, scores = self.recognizer.identify(embed)
-                    # Самое большое лицо
-                    if i == 0:
-                        # Если мы его знаем
-                        tm = str(datetime.now())[:16]
-                        if result != SqliteDialoguser.UNKNOWN:
                             cursor = connection.cursor()
-                            cursor.execute(
-                                f"UPDATE main.FRS_dialoguser SET time_enrolled = '{datetime.now()}' WHERE uid = '{result}'")
-                            connection.close()
-                            try:
-                                print(f"Известный персонаж: {result}")
-                                visits = open(
-                                    urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt',
-                                    'r')
-                                all_visits = visits.read()
-                                if tm not in all_visits:
-                                    visits_append = open(
+                            cursor.execute(f"SELECT uid FROM main.FRS_dialoguser ORDER BY time_enrolled DESC LIMIT 1 ")
+                            test = cursor.fetchall()
+                            print()
+                            print()
+                            print(test)
+                            print(len(test))
+                            print()
+                            print()
+                            result, scores = self.recognizer.identify(embed)
+                            tm = str(datetime.now())[:16]
+                            if result != SqliteDialoguser.UNKNOWN:
+                                # cursor = connection.cursor()
+                                print(datetime.now())
+                                print(datetime.now())
+                                print(datetime.now())
+                                print(datetime.now())
+                                print(datetime.now())
+                                print(datetime.now())
+                                cursor.execute(f"UPDATE main.FRS_dialoguser SET time_enrolled = '{datetime.now()}' WHERE uid = '{result}'")
+                                cursor.execute(f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
+                                connection.close()
+                                try:
+                                    print(f"Известный персонаж: {result}")
+                                    visits = open(
                                         urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt',
-                                        'a')
-                                    print(str(tm), end='\n', file=visits_append)
-                                    visits_append.close()
-                                visits.close()
-                            except:
+                                        'r')
+                                    all_visits = visits.read()
+                                    if tm not in all_visits:
+                                        visits_append = open(
+                                            urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt',
+                                            'a')
+                                        print(str(tm), end='\n', file=visits_append)
+                                        visits_append.close()
+                                    visits.close()
+                                except:
+                                    cursor = connection.cursor()
+                                    cursor.execute(
+                                        f"SELECT uid FROM main.FRS_dialoguser ORDER BY time_enrolled DESC LIMIT 1")
+                                    id = ' '.join(map(str, cursor.fetchall()[0]))
+                                    cursor.execute(f"SELECT time_enrolled FROM main.FRS_dialoguser WHERE uid = '{id}'")
+                                    user_tm = cursor.fetchall()[0][0]
+                                    cursor.execute(f"SELECT coords FROM main.FRS_dialoguser WHERE uid = '{id}'")
+                                    boxA = np.array([int(i) for i in
+                                                     ' '.join(map(str, cursor.fetchall()[0])).replace('[', '').replace(
+                                                         ']', '').split()])
+                                    connection.close()
+                                    print()
+                                    print()
+                                    print()
+                                    print(boxA)
+                                    print(boxB)
+                                    print()
+                                    print()
+                                    xA = max(boxA[0], boxB[0])
+                                    yA = max(boxA[1], boxB[1])
+                                    xB = min(boxA[2], boxB[2])
+                                    yB = min(boxA[3], boxB[3])
+                                    int_area = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+                                    area_A = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+                                    area_B = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+                                    IOU = int_area / float(area_A + area_B - int_area)
+                                    print()
+                                    print()
+                                    print(IOU)
+                                    print()
+                                    print()
+                                    time_diff = datetime.now() - user_tm
+                                    print()
+                                    print()
+                                    print(user_tm)
+                                    print(datetime.now())
+                                    print(time_diff)
+                                    print()
+                                    print()
+                                    print()
+                                    print()
+                                    time_diff = time_diff.total_seconds()
+                                    print()
+                                    print(user_tm)
+                                    print(datetime.now())
+                                    print(time_diff)
+                                    print()
+                                    print()
+                                    print()
+                                    if IOU >= 0.4 and time_diff <= 3:
+                                        cursor = connection.cursor()
+                                        cursor.execute(
+                                            f"UPDATE main.FRS_dialoguser SET time_enrolled = '{datetime.now()}' WHERE uid = '{result}'")
+                                        cursor.execute(
+                                            f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
+                                        connection.close()
+                                        result = id
+                                        # try:
+                                        print(f"Известный персонаж: {id}")
+                                        visits = open(
+                                            urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'r')
+                                        all_visits = visits.read()
+                                        if tm not in all_visits:
+                                            visits_append = open(
+                                                urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'a')
+                                            print(str(tm), end='\n', file=visits_append)
+                                            visits_append.close()
+                                        visits.close()
+                                    else:
+                                        result = SqliteDialoguser.randomString()
+                                        print(f"Это новый персонаж: {result}")
+                                        unk = unknown()
+                                        cursor = connection.cursor()
+                                        os.makedirs(urfolder + '\\FRS\\static\\facephotos\\' + result)
+                                        os.chdir(urfolder + '\\FRS\\static\\facephotos\\' + result)
+                                        photo_slice = cv2.cvtColor(photo_slice, cv2.COLOR_BGR2RGB)
+                                        cv2.imwrite(f"photo_{result.replace('/', ' ')}.png", photo_slice)
+                                        user = DialogUser(
+                                            uid=result,
+                                            time_enrolled=datetime.now(),
+                                            photo=photo_slice.tobytes(),
+                                            name='Незнакомец №' + str(unk),
+                                            vector=embed.tobytes(),
+                                        )
+                                        user.save()
+                                        cursor.execute(f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
+                                        visits = open(
+                                            urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt',
+                                            'a')
+                                        print(str(tm), end='\n', file=visits)
+                                        visits.close()
+                                        self.dataBase.add_dialog_uid(result)
+                            elif len(test) >= 1:
+                                cursor = connection.cursor()
+                                cursor.execute(f"SELECT uid FROM main.FRS_dialoguser ORDER BY time_enrolled DESC LIMIT 1")
+                                id = ' '.join(map(str, cursor.fetchall()[0]))
+                                cursor.execute(f"SELECT time_enrolled FROM main.FRS_dialoguser WHERE uid = '{id}'")
+                                user_tm = cursor.fetchall()[0][0]
+                                cursor.execute(f"SELECT coords FROM main.FRS_dialoguser WHERE uid = '{id}'")
+                                boxA = np.array([int(i) for i in ' '.join(map(str, cursor.fetchall()[0])).replace('[', '').replace(']', '').split()])
+                                connection.close()
+                                print()
+                                print()
+                                print()
+                                print(boxA)
+                                print(boxB)
+                                print()
+                                print()
+                                xA = max(boxA[0], boxB[0])
+                                yA = max(boxA[1], boxB[1])
+                                xB = min(boxA[2], boxB[2])
+                                yB = min(boxA[3], boxB[3])
+                                int_area = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+                                area_A = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+                                area_B = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+                                IOU = int_area / float(area_A + area_B - int_area)
+                                print()
+                                print()
+                                print(IOU)
+                                print()
+                                print()
+                                time_diff = datetime.now() - user_tm
+                                print()
+                                print()
+                                print(user_tm)
+                                print(datetime.now())
+                                print(time_diff)
+                                print()
+                                print()
+                                print()
+                                print()
+                                time_diff = time_diff.total_seconds()
+                                print()
+                                print(user_tm)
+                                print(datetime.now())
+                                print(time_diff)
+                                print()
+                                print()
+                                print()
+                                if IOU >= 0.4 and time_diff <= 3:
+                                        cursor = connection.cursor()
+                                        cursor.execute(f"UPDATE main.FRS_dialoguser SET time_enrolled = '{datetime.now()}' WHERE uid = '{result}'")
+                                        cursor.execute(f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
+                                        connection.close()
+                                        result = id
+                                        # try:
+                                        print(f"Известный персонаж: {id}")
+                                        visits = open(
+                                            urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'r')
+                                        all_visits = visits.read()
+                                        if tm not in all_visits:
+                                            visits_append = open(
+                                                urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'a')
+                                            print(str(tm), end='\n', file=visits_append)
+                                            visits_append.close()
+                                        visits.close()
+
+                                else:
+                                    result = SqliteDialoguser.randomString()
+                                    print(f"Это новый персонаж: {result}")
+                                    unk = unknown()
+                                    cursor = connection.cursor()
+                                    os.makedirs(urfolder + '\\FRS\\static\\facephotos\\' + result)
+                                    os.chdir(urfolder + '\\FRS\\static\\facephotos\\' + result)
+                                    photo_slice = cv2.cvtColor(photo_slice, cv2.COLOR_BGR2RGB)
+                                    cv2.imwrite(f"photo_{result.replace('/', ' ')}.png", photo_slice)
+                                    user = DialogUser(
+                                        uid=result,
+                                        time_enrolled=datetime.now(),
+                                        photo=photo_slice.tobytes(),
+                                        name='Незнакомец №' + str(unk),
+                                        vector=embed.tobytes()
+                                    )
+                                    cursor.execute(
+                                        f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
+                                    user.save()
+                                    visits = open(
+                                        urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt', 'a')
+                                    print(str(tm), end='\n', file=visits)
+                                    visits.close()
+                                    self.dataBase.add_dialog_uid(result)
+                            else:
                                 result = SqliteDialoguser.randomString()
                                 print(f"Это новый персонаж: {result}")
                                 unk = unknown()
+                                cursor = connection.cursor()
                                 os.makedirs(urfolder + '\\FRS\\static\\facephotos\\' + result)
                                 os.chdir(urfolder + '\\FRS\\static\\facephotos\\' + result)
                                 photo_slice = cv2.cvtColor(photo_slice, cv2.COLOR_BGR2RGB)
@@ -215,38 +429,22 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                                     name='Незнакомец №' + str(unk),
                                     vector=embed.tobytes(),
                                 )
+                                cursor.execute(
+                                    f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
                                 user.save()
                                 visits = open(
-                                    urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt',
-                                    'a')
+                                    urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt', 'a')
                                 print(str(tm), end='\n', file=visits)
                                 visits.close()
                                 self.dataBase.add_dialog_uid(result)
-                        else:
-                            result = SqliteDialoguser.randomString()
-                            print(f"Это новый персонаж: {result}")
-                            unk = unknown()
-                            os.makedirs(urfolder + '\\FRS\\static\\facephotos\\' + result)
-                            os.chdir(urfolder + '\\FRS\\static\\facephotos\\' + result)
-                            photo_slice = cv2.cvtColor(photo_slice, cv2.COLOR_BGR2RGB)
-                            cv2.imwrite(f"photo_{result.replace('/', ' ')}.png", photo_slice)
-                            user = DialogUser(
-                                uid=result,
-                                time_enrolled=datetime.now(),
-                                photo=photo_slice.tobytes(),
-                                name='Незнакомец №' + str(unk),
-                                vector=embed.tobytes(),
-                            )
-                            user.save()
-                            visits = open(
-                                urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt', 'a')
-                            print(str(tm), end='\n', file=visits)
-                            visits.close()
-                            self.dataBase.add_dialog_uid(result)
-                        os.chdir(urfolder)
-                        current_user_uid = result or None
-                    display_name = DialogUser.objects.get(uid=result).name if result != SqliteDialoguser.UNKNOWN else "try again"
-                    users.append(display_name)
+                            os.chdir(urfolder)
+                            current_user_uid = result or None
+                            display_name = DialogUser.objects.get(uid=result).name if result != SqliteDialoguser.UNKNOWN else "try again"
+                            users.append(display_name)
+                            cursor= connection.cursor()
+                            cursor.execute(
+                                f"UPDATE main.FRS_dialoguser SET time_enrolled = '{datetime.now()}', coords = '{boxB}' WHERE uid = '{result}'")
+                            connection.close()
             boxes = boxes.tolist()
             response = [b + [users[idx]] for idx, b in enumerate(boxes)]
             if photo_slice is not None:
