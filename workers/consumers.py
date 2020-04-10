@@ -188,7 +188,6 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                 faces, boxes = sorted_faces(faces, boxes, 10)
                 embeddings = self.recognizer._getEmbedding(faces)
                 y1, x1, y2, x2 = boxes[0]
-                boxB = np.array(boxes[0])
                 w, h, div, (maxy, maxx, *_) = x2 - x1, y2 - y1, 5, img_data.shape
                 photo_slice = img_data[
                     max(y1 - h // div, 0):min(y2 + h // div, maxy - 1),
@@ -208,21 +207,19 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                             result, scores = self.recognizer.identify(embed)
                             tm = str(datetime.now())[:16]
                             if result != SqliteDialoguser.UNKNOWN:
-                                # cursor = connection.cursor()
+                                boxB = np.array(boxes[0])
+                                print()
+                                print()
+                                print()
                                 print(datetime.now())
-                                print(datetime.now())
-                                print(datetime.now())
-                                print(datetime.now())
-                                print(datetime.now())
-                                print(datetime.now())
+                                print()
+                                print()
                                 cursor.execute(f"UPDATE main.FRS_dialoguser SET time_enrolled = '{datetime.now()}' WHERE uid = '{result}'")
                                 cursor.execute(f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
                                 connection.close()
                                 try:
                                     print(f"Известный персонаж: {result}")
-                                    visits = open(
-                                        urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt',
-                                        'r')
+                                    visits = open(urfolder + '\\FRS\\static\\facephotos\\' + result + '\\' + result + '.txt', 'r')
                                     all_visits = visits.read()
                                     if tm not in all_visits:
                                         visits_append = open(
@@ -232,75 +229,75 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                                         visits_append.close()
                                     visits.close()
                                 except:
-                                    cursor = connection.cursor()
-                                    cursor.execute(
-                                        f"SELECT uid FROM main.FRS_dialoguser ORDER BY time_enrolled DESC LIMIT 1")
-                                    id = ' '.join(map(str, cursor.fetchall()[0]))
-                                    cursor.execute(f"SELECT time_enrolled FROM main.FRS_dialoguser WHERE uid = '{id}'")
-                                    user_tm = cursor.fetchall()[0][0]
-                                    cursor.execute(f"SELECT coords FROM main.FRS_dialoguser WHERE uid = '{id}'")
-                                    boxA = np.array([int(i) for i in
-                                                     ' '.join(map(str, cursor.fetchall()[0])).replace('[', '').replace(
-                                                         ']', '').split()])
-                                    connection.close()
-                                    print()
-                                    print()
-                                    print()
-                                    print(boxA)
-                                    print(boxB)
-                                    print()
-                                    print()
-                                    xA = max(boxA[0], boxB[0])
-                                    yA = max(boxA[1], boxB[1])
-                                    xB = min(boxA[2], boxB[2])
-                                    yB = min(boxA[3], boxB[3])
-                                    int_area = max(0, xB - xA + 1) * max(0, yB - yA + 1)
-                                    area_A = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
-                                    area_B = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
-                                    IOU = int_area / float(area_A + area_B - int_area)
-                                    print()
-                                    print()
-                                    print(IOU)
-                                    print()
-                                    print()
-                                    time_diff = datetime.now() - user_tm
-                                    print()
-                                    print()
-                                    print(user_tm)
-                                    print(datetime.now())
-                                    print(time_diff)
-                                    print()
-                                    print()
-                                    print()
-                                    print()
-                                    time_diff = time_diff.total_seconds()
-                                    print()
-                                    print(user_tm)
-                                    print(datetime.now())
-                                    print(time_diff)
-                                    print()
-                                    print()
-                                    print()
-                                    if IOU >= 0.4 and time_diff <= 3:
-                                        cursor = connection.cursor()
-                                        cursor.execute(
-                                            f"UPDATE main.FRS_dialoguser SET time_enrolled = '{datetime.now()}' WHERE uid = '{result}'")
-                                        cursor.execute(
-                                            f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
-                                        connection.close()
-                                        result = id
-                                        # try:
-                                        print(f"Известный персонаж: {id}")
-                                        visits = open(
-                                            urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'r')
-                                        all_visits = visits.read()
-                                        if tm not in all_visits:
-                                            visits_append = open(
-                                                urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'a')
-                                            print(str(tm), end='\n', file=visits_append)
-                                            visits_append.close()
-                                        visits.close()
-                                    else:
+                                    # cursor = connection.cursor()
+                                    # cursor.execute(
+                                    #     f"SELECT uid FROM main.FRS_dialoguser ORDER BY time_enrolled DESC LIMIT 1")
+                                    # id = ' '.join(map(str, cursor.fetchall()[0]))
+                                    # cursor.execute(f"SELECT time_enrolled FROM main.FRS_dialoguser WHERE uid = '{id}'")
+                                    # user_tm = cursor.fetchall()[0][0]
+                                    # cursor.execute(f"SELECT coords FROM main.FRS_dialoguser WHERE uid = '{id}'")
+                                    # boxA = np.array([int(i) for i in
+                                    #                  ' '.join(map(str, cursor.fetchall()[0])).replace('[', '').replace(
+                                    #                      ']', '').split()])
+                                    # connection.close()
+                                    # print()
+                                    # print()
+                                    # print()
+                                    # print(boxA)
+                                    # print(boxB)
+                                    # print()
+                                    # print()
+                                    # xA = max(boxA[0], boxB[0])
+                                    # yA = max(boxA[1], boxB[1])
+                                    # xB = min(boxA[2], boxB[2])
+                                    # yB = min(boxA[3], boxB[3])
+                                    # int_area = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+                                    # area_A = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+                                    # area_B = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+                                    # IOU = int_area / float(area_A + area_B - int_area)
+                                    # print()
+                                    # print()
+                                    # print(IOU)
+                                    # print()
+                                    # print()
+                                    # time_diff = datetime.now() - user_tm
+                                    # print()
+                                    # print()
+                                    # print(user_tm)
+                                    # print(datetime.now())
+                                    # print(time_diff)
+                                    # print()
+                                    # print()
+                                    # print()
+                                    # print()
+                                    # time_diff = time_diff.total_seconds()
+                                    # print()
+                                    # print(user_tm)
+                                    # print(datetime.now())
+                                    # print(time_diff)
+                                    # print()
+                                    # print()
+                                    # print()
+                                    # if IOU >= 0.2 and time_diff <= 4:
+                                    #     cursor = connection.cursor()
+                                    #     cursor.execute(
+                                    #         f"UPDATE main.FRS_dialoguser SET time_enrolled = '{datetime.now()}' WHERE uid = '{result}'")
+                                    #     cursor.execute(
+                                    #         f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
+                                    #     connection.close()
+                                    #     result = id
+                                    #     # try:
+                                    #     print(f"Известный персонаж: {id}")
+                                    #     visits = open(
+                                    #         urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'r')
+                                    #     all_visits = visits.read()
+                                    #     if tm not in all_visits:
+                                    #         visits_append = open(
+                                    #             urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'a')
+                                    #         print(str(tm), end='\n', file=visits_append)
+                                    #         visits_append.close()
+                                    #     visits.close()
+                                    # else:
                                         result = SqliteDialoguser.randomString()
                                         print(f"Это новый персонаж: {result}")
                                         unk = unknown()
@@ -325,6 +322,7 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                                         visits.close()
                                         self.dataBase.add_dialog_uid(result)
                             elif len(test) >= 1:
+                                boxB = np.array(boxes[0])
                                 cursor = connection.cursor()
                                 cursor.execute(f"SELECT uid FROM main.FRS_dialoguser ORDER BY time_enrolled DESC LIMIT 1")
                                 id = ' '.join(map(str, cursor.fetchall()[0]))
@@ -340,10 +338,10 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                                 print(boxB)
                                 print()
                                 print()
-                                xA = max(boxA[0], boxB[0])
-                                yA = max(boxA[1], boxB[1])
-                                xB = min(boxA[2], boxB[2])
-                                yB = min(boxA[3], boxB[3])
+                                yA = max(boxA[0], boxB[0])
+                                xA = max(boxA[1], boxB[1])
+                                yB = min(boxA[2], boxB[2])
+                                xB = min(boxA[3], boxB[3])
                                 int_area = max(0, xB - xA + 1) * max(0, yB - yA + 1)
                                 area_A = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
                                 area_B = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
@@ -371,7 +369,7 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                                 print()
                                 print()
                                 print()
-                                if IOU >= 0.4 and time_diff <= 3:
+                                if IOU >= 0.2 and time_diff <= 4:
                                         cursor = connection.cursor()
                                         cursor.execute(f"UPDATE main.FRS_dialoguser SET time_enrolled = '{datetime.now()}' WHERE uid = '{result}'")
                                         cursor.execute(f"UPDATE main.FRS_dialoguser SET coords = '{boxB}' WHERE uid = '{result}'")
@@ -390,6 +388,7 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                                         visits.close()
 
                                 else:
+                                    boxB = np.array(boxes[0])
                                     result = SqliteDialoguser.randomString()
                                     print(f"Это новый персонаж: {result}")
                                     unk = unknown()
@@ -414,6 +413,7 @@ class FaceRecognitionConsumer(SyncConsumer, TimeShifter):
                                     visits.close()
                                     self.dataBase.add_dialog_uid(result)
                             else:
+                                boxB = np.array(boxes[0])
                                 result = SqliteDialoguser.randomString()
                                 print(f"Это новый персонаж: {result}")
                                 unk = unknown()
