@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^\S+save_name/$', views.save_name, name='save_name'),
     url(r'^\S+delete_name/$', views.delete_name, name='delete_name'),
     url(r'^faces/filtered_faces/$', views.filtered_faces, name='filtered_faces'),
+    url(r'^faces/journal/$', views.journal, name='journal'),
 ]
 
 if settings.DEBUG:

@@ -1,5 +1,4 @@
 import os
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SERVANT_DIR = os.path.join(os.path.dirname(BASE_DIR), "ServantGrunbeld")
 LINGVO_DIR = os.path.join(BASE_DIR, "workers", "NosferatuZodd")
@@ -58,8 +57,8 @@ ASGI_APPLICATION = 'vef.routing.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'djongo',
+        'NAME': 'faces_EOB',
     }
 }
 

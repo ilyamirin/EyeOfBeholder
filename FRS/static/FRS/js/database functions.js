@@ -1,3 +1,4 @@
+var count = 0;
 function qty() {
     var i = document.getElementById('srch').value;
     return i
@@ -11,7 +12,7 @@ function nm() {
 
 function savemany() {
 
-    var ticks = document.getElementsByTagName("table")[0].getElementsByClassName("checked");
+    var ticks = document.getElementsByTagName("table")[0].getElementsByClassName("deleted");
 
     for (var i = 0; i < ticks.length; i++) {
         var a = ticks[i].getAttribute("id");
@@ -20,23 +21,47 @@ function savemany() {
     alert("Измененные элементы сохранены");
     location.reload();
 }
+function merge(){
+
+    var ticks = document.getElementsByTagName("table")[0].getElementsByClassName("deleted");
+    ticks = Array.prototype.slice.call(ticks);
+
+    // Now we can sort it.  Sort alphabetically
+    ticks.sort(function(a, b){
+        return a.textContent.localeCompare(b.textContent);
+    });
+    console.log(ticks);
+    // for (var i = 0; i < ticks.length; i++) {
+    //     var a = ticks[i].getAttribute("id");
+    //     // alert(a);
+    //     saveQuestionAnswer(a)
+    // }
+    // alert("Пользователи ");
+    // location.reload();
+}
 
 function deletemany() {
-
     var ticks = document.getElementsByTagName("table")[0].getElementsByClassName("deleted");
     for (var i = 0; i < ticks.length; i++) {
         var a = ticks[i].getAttribute("id");
         deleteRow(a);
     }
+
     alert("Выбранные элементы удалены.");
     location.reload();
 }
 
+function getid(elem) {
+    var x = parseInt(elem.parentNode.parentNode.rowIndex);
+    var val = $(".somId")[x-1].innerText;
+    return val
+}
+
 function chekchek(name, id) {
     if (name !== $('td[data-id="uid-' + id + '"]').text()) {
-        document.querySelector("input#" + id).setAttribute("class", "checked");
-        document.querySelector("input#" + id).setAttribute("checked", "checked");
-        document.querySelector("input#" + id).checked = true;
+            document.querySelector("input#" + id).setAttribute("class", "deleted");
+            document.querySelector("input#" + id).setAttribute("checked", "checked");
+            document.querySelector("input#" + id).checked = true;
     }
 }
 
@@ -44,16 +69,19 @@ function chekchek2(checkbox, name, id) {
     if (checkbox.checked) {
         document.querySelector("input#" + id).setAttribute("class", "deleted");
         document.querySelector("input#" + id).setAttribute("checked", "checked");
+        document.querySelector("input#" + id).setAttribute("is-count", count);
         document.querySelector("input#" + id).checked = true;
-    } else {
+        count++;
+    }
+    else {
         document.querySelector("input#" + id).classList.remove("deleted");
         document.querySelector("input#" + id).removeAttribute("checked");
+        document.querySelector("input#" + id).removeAttribute("is-count");
         document.querySelector("input#" + id).checked = false;
     }
 }
 
 function deleteRow(id) {
-
     editableQuestion = $('td[data-id="uid-' + id + '"]'); //this will get data-id=question-1 where 1 is the question ID
     // no change change made then return false
     if ($(editableQuestion).attr('data-old_value') === editableQuestion.innerHTML)
@@ -104,12 +132,16 @@ function checkAll(checkbox) {
         for (let i = 1; i < checkList.length; ++i) {
             checkList[i].setAttribute("class", "deleted");
             checkList[i].setAttribute("checked", "checked");
+            checkList[i].setAttribute("is-count", count);
             checkList[i].checked = true;
+            count++;
         }
     } else
         for (let i = 1; i < checkList.length; ++i) {
             checkList[i].checked = false;
             checkList[i].classList.remove("deleted");
             checkList[i].removeAttribute("checked");
+            checkList[i].removeAttribute("is-count");
+
         }
 }

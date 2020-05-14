@@ -15,6 +15,12 @@ from django.db import connection
 from django.http import HttpResponse
 from django.conf import settings
 from django.shortcuts import redirect
+from pymongo import MongoClient as MC
+import re
+import datetime
+import locale
+client = MC('mongodb://localhost:27017/')
+db = client.faces_EOB.FRS_dialoguser
 
 
 def redirect_view(request):
@@ -33,6 +39,22 @@ def get_lang(req):
     return lang
 
 
+def journal(req):
+    id = req.GET['uid']
+    name = []
+    for i in db.find({'uid': id}, {'name': 1}):
+        name.append(i['name'])
+    urfolder = str(pl.Path(__file__).parents[1])
+    with open(urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'r') as jrnl:
+        locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+        a = [datetime.datetime.strptime(j[:16], '%Y-%m-%d %H:%M').strftime('%d %b %Y %H:%M, %A') for j in jrnl.readlines()]
+    return render(req, 'FRS/journal.html', {
+        'id': id,
+        'name': name,
+        'times': a
+    })
+
+
 def index(req):
     return render(req, 'FRS/index.html', {})
 
@@ -40,26 +62,22 @@ def index(req):
 def faces(req):
     if not req.user.is_authenticated:
         return redirect('/admin/login/?next=/faces')
-
-    cursor = connection.cursor()
-    cursor.execute('SELECT uid, name, time_enrolled FROM main.FRS_dialoguser ORDER BY time_enrolled DESC')
-    ldb = cursor.fetchall()
-
+    data = []
+    for i in db.find({}, {'_id': 0, 'uid': 1, 'name': 1, 'time_enrolled': 1, 'photo': 1}):
+        data.append((i['uid'], i['name'], i['time_enrolled'], i['photo']))
     return render(req, 'FRS/faces.html', {
-        'data': ldb,
+        'data': data,
     })
+
 
 def filtered_faces(req):
     time = req.GET['time']
     name = req.GET['name']
     urfolder = str(pl.Path(__file__).parents[1])
-    cursor1 = connection.cursor()
-    cursor1.execute(f"SELECT uid FROM main.FRS_dialoguser WHERE name LIKE '%{name}%'")
-    uids = cursor1.fetchall()
-    cursor = connection.cursor()
     ids = []
-    for i in uids:
-        ids.append(str(*i))
+    for i in db.find({'name': re.compile(name, re.IGNORECASE)}, {'_id': 0, 'uid': 1}):
+        ids.append(str(i['uid']))
+
     for id in ids[::-1]:
         with open(urfolder + '\\FRS\\static\\facephotos\\' + id + '\\' + id + '.txt', 'r') as inp:
             times = inp.read().split()
@@ -69,67 +87,44 @@ def filtered_faces(req):
                 else:
                     continue
         inp.close()
-    ids = ', '.join(["'" + i + "'" for i in ids])
+    data = []
+    for i in db.find({'name': re.compile(name, re.IGNORECASE), 'uid': {'$in': ids}}, {'_id': 0, 'uid': 1, 'name': 1, 'time_enrolled': 1}):
+        data.append((i['uid'], i['name'], i['time_enrolled']))
 
-    # name = name.lower()
-
-    q = f"""
-        SELECT uid, name, time_enrolled
-        FROM main.FRS_dialoguser
-        WHERE uid IN ({ids})
-        AND name LIKE '%{name}%'
-        ORDER BY time_enrolled DESC
-        """
-    cursor.execute(q)
-    tmr = cursor.fetchall()
     return render(req, 'FRS/filtered_faces.html', {
-        'data': tmr,
+        'data': data,
         'name_filter': name,
         'date_filter': time,
     })
 
 
 def save_name(req):
-
     nm = req.GET['name']
     id = req.GET['uid']
-    with connection.cursor() as cursor:
-        cursor.execute(f"UPDATE main.FRS_dialoguser SET name = '{nm}' WHERE uid = '{id[4:]}'")
-    connection.close()
-
+    db.update_one({'uid': {'$eq': id[4:]}},
+                  {'$set': {'name': nm}})
     return HttpResponse(json.dumps({'name': nm}))
+
 
 def delete_name(req):
     thisf = str(pl.Path(__file__).parents[1])
     nm = req.GET['name']
     id = req.GET['uid']
-    with connection.cursor() as cursor:
-        cursor.execute(f"DELETE FROM main.FRS_dialoguser WHERE uid = '{id[4:]}'")
-    connection.close()
+    db.delete_one({'uid': {'$eq': id[4:]}})
     waytofolder = os.path.join(thisf + '\\FRS\\static\\facephotos\\' + id[4:])
     shutil.rmtree(waytofolder)
     return HttpResponse(json.dumps({'name': nm}))
 
 
 def stream(req):
-    cursor = connection.cursor()
-
-    # flag = req.POST.get('flag')
-    # if flag == 'reloadpage':800
-    #     cursor.execute('SELECT count(*) FROM main.FRS_dialoguser')
-    #     rc = cursor.fetchone()
-    #     return json.dumps({'rc': rc[0]}, ensure_ascii=False)
-
-    cursor.execute('SELECT uid, name, time_enrolled FROM main.FRS_dialoguser ORDER BY time_enrolled DESC LIMIT 0, 5 ')
-    ldb = cursor.fetchall()
+    data = []
+    for i in db.find({}, {'_id': 0, 'uid': 1, 'name': 1, 'time_enrolled': 1}):
+        data.append((i['uid'], i['name'], i['time_enrolled']))
     lang = get_lang(req)
-    # cursor.execute('SELECT count(*) FROM main.FRS_dialoguser')
-    # rc = cursor.fetchone()
 
     res = render(req, 'FRS/stream.html', {
         "lang": lang,
-        'data': ldb,
-        # 'row_count': rc[0],
+        'data': data,
     })
     res['Feature-Policy'] = "fullscreen *"
     return res

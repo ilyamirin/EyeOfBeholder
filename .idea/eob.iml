@@ -13,9 +13,14 @@
     </facet>
   </component>
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
-    <orderEntry type="inheritedJdk" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
+    </content>
+    <orderEntry type="jdk" jdkName="Python 3.7 (EyeOfBeholder)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="PackageRequirementsSettings">
+    <option name="modifyBaseFiles" value="true" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />
@@ -26,7 +31,6 @@
     </option>
   </component>
   <component name="TestRunnerService">
-    <option name="projectConfiguration" value="Twisted Trial" />
     <option name="PROJECT_TEST_RUNNER" value="Twisted Trial" />
   </component>
 </module>
