@@ -22,22 +22,20 @@ function savemany() {
     location.reload();
 }
 function merge(){
-
     var ticks = document.getElementsByTagName("table")[0].getElementsByClassName("deleted");
-    ticks = Array.prototype.slice.call(ticks);
-
-    // Now we can sort it.  Sort alphabetically
-    ticks.sort(function(a, b){
-        return a.textContent.localeCompare(b.textContent);
-    });
-    console.log(ticks);
-    // for (var i = 0; i < ticks.length; i++) {
-    //     var a = ticks[i].getAttribute("id");
-    //     // alert(a);
-    //     saveQuestionAnswer(a)
-    // }
-    // alert("Пользователи ");
-    // location.reload();
+    function comp(a, b) {
+        if (a.attributes['is-count'].value > b.attributes['is-count'].value) return 1;
+        else if (a.attributes['is-count'].value < b.attributes['is-count'].value) return -1;
+        else return 0;
+    }
+    ticks = [...ticks].sort(comp)
+    for(var i = 1; i < ticks.length; i++){
+        var merged = ticks[i].getAttribute("id")
+        merging(ticks[0].getAttribute("id"), merged)
+    }
+    console.log([...ticks].sort(comp));
+    alert('Пользователи успешно объединены')
+    location.reload()
 }
 
 function deletemany() {
@@ -118,6 +116,29 @@ function saveQuestionAnswer(id) {
         data: {
             "name": editableQuestion.text(),
             "uid": editableQuestion.attr('data-id')
+        },
+        error: function () {
+            console.log("ошибка");
+            alert("An error occurred")
+        }
+    });
+}
+
+function merging(base, id) {
+    // editableQuestion = $('td[data-id="uid-' + id + '"]'); //this will get data-id=question-1 where 1 is the question ID
+    //
+    // // no change change made then return false
+    // if ($(editableQuestion).attr('data-old_value') === editableQuestion.innerHTML)
+    //     return false;
+
+    // send ajax to update value
+    $.ajax({
+        url: "merge_names/",
+        type: "GET",
+        dataType: "json",
+        data: {
+            "base": base,
+            "merged": id
         },
         error: function () {
             console.log("ошибка");

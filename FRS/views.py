@@ -116,9 +116,23 @@ def delete_name(req):
     return HttpResponse(json.dumps({'name': nm}))
 
 
+def merge_names(req):
+    thisf = str(pl.Path(__file__).parents[1])
+    base = req.GET['base']
+    merged = req.GET['merged']
+    m_user = db.find_one({'uid': {'$eq': merged}})
+    for i in m_user.get('vector'):
+        db.update_one({'uid': {'$eq': base}},
+                     {'$addToSet': {'vector': i}})
+    db.delete_one({'uid': {'$eq': merged}})
+    waytofolder = os.path.join(thisf + '\\FRS\\static\\facephotos\\' + merged)
+    shutil.rmtree(waytofolder)
+    return HttpResponse(json.dumps({'base': base}))
+
+
 def stream(req):
     data = []
-    for i in db.find({}, {'_id': 0, 'uid': 1, 'name': 1, 'time_enrolled': 1}):
+    for i in db.find({}, {'_id': 0, 'uid': 1, 'name': 1, 'time_enrolled': 1}).limit(5):
         data.append((i['uid'], i['name'], i['time_enrolled']))
     lang = get_lang(req)
 
