@@ -53,7 +53,7 @@
     .journal-datetime table{
         width: calc(100% - 9px);
         margin: 0 0 0 10px;
-        height: calc(100% - 60px);
+        max-height: calc(100% - 60px);
     }
 
     .journal-datetime-header{
@@ -70,15 +70,17 @@
     }
 
     .journal-datetime tbody{
-        height: calc(100% - 60px);
+        max-height: calc(100% - 60px);
+        margin-bottom: 100px;
     }
 
     .journal-datetime td {
         background-color: #EFF8FF;
-        font-size: 16px;
+        font-size: 19px;
         font-weight: normal;
         height: 30px;
         border: 1px solid #0067b1;
+        padding-left: 13px;
     }
 
     #header {
